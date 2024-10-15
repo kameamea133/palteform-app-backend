@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -19,9 +20,14 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['teacher', 'student'],
+    enum: ['teacher', 'student', 'admin'],
     required: true
   },
+
+  courses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+
   isApproved: {
     type: Boolean,
     default: false  
@@ -31,5 +37,21 @@ const UserSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+UserSchema.pre('save', async function(next) {
+  if(!this.isModified('password')) return next();
+  
+  
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+UserSchema.methods.comparePassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
+}
 
 module.exports = mongoose.model('User', UserSchema);

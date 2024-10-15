@@ -4,7 +4,7 @@ exports.auth = (req, res, next) => {
   const token = req.header('x-auth-token');
 
   if (!token) {
-    return res.status(401).json({ msg: 'Pas de token, autorisation refusée' });
+    return res.status(401).json({ msg: 'No token, authorization denied' });
   }
 
   try {
@@ -12,6 +12,6 @@ exports.auth = (req, res, next) => {
     req.user = decoded.user;
     next();
   } catch (err) {
-    res.status(401).json({ msg: 'Token invalide' });
+    res.status(401).json({ msg: 'Invalid token' });
   }
 };
